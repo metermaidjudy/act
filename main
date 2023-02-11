@@ -1,0 +1,754 @@
+char key1[38] = { 'T', 'H', 'E', 'F', 'I', 'V', 'B', 'O', 'X', 'N', 'G', 'W', 'Z', 'A', 'R', 'D', 'S', 'J', 'U', 'M', 'P', 'Q', 'C', 'K', 'L', 'Y', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '%' };
+char key2[38] = { 'C', 'W', 'M', 'F', 'J', 'O', 'R', 'D', 'B', 'A', 'N', 'K', 'G', 'L', 'Y', 'P', 'H', 'S', 'V', 'E', 'X', 'T', 'Q', 'U', 'I', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '%' };
+char key3[38] = { 'S', 'P', 'H', 'I', 'N', 'X', 'O', 'F', 'B', 'L', 'A', 'C', 'K', 'Q', 'U', 'R', 'T', 'Z', 'J', 'D', 'G', 'E', 'M', 'Y', 'V', 'W', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '%' };
+char key4[38] = { 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ' ', '%' };
+
+String message = String("");
+String mess = String("");
+String str = String("");
+int ledPin[] = {24, 22, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
+
+int unit_delay = 5000;
+void blinkAll();
+void resetLight();
+
+String toString(String a[]) {
+  int count = 0;
+  int i = 0;
+  String cur = ".";
+  while (a[i]) {
+    cur = a[i];
+    count++;
+    i++;
+    if (cur == "%" || cur == "37") {
+      break;
+    }
+  }
+  str = "";
+  for (i = 0; i < count; i++) {
+    str += a[i];
+  }
+  return str;
+}
+
+void Encrypt() {
+  Serial.print("\n\nCoded Message: \n ");
+  String finalcode = step1and2(message);
+  Serial.print(finalcode);
+  Serial.print("\n");
+  morseOutput(finalcode);
+}
+
+String step1and2(String mess) {
+  String code1[mess.length()];
+  for (int i = 0; i < mess.length(); i++) {
+    for (int j = 0; j < 38; j++) {
+      if ((mess.charAt(i) == key1[j]) || (toupper(mess.charAt(i)) == key1[j])) {
+        if (j < 36) {
+          int cipher = ((j * 5) + 8) % 36;
+          if (cipher < 10) {
+            code1[i] = "0";
+            code1[i] += (String(cipher));
+          } else {
+            code1[i] = String(cipher);
+          }
+        } else {
+          code1[i] = String(j);
+        }
+        break;
+      }
+    }
+  }
+  String step12 = toString(code1);
+  // Serial.println("\nStep 1: "+step12);
+  return step345(step12);
+}
+
+String step345(String mess) {
+  String code2[mess.length() / 2];
+  for (int i = 0, k = 0; k < mess.length() / 2; k++, i = i + 2) {
+    int temp = ((mess.charAt(i) - '0') * 10 + (mess.charAt(i + 1) - '0'));
+    for (int j = 0; j < 38; j++) {
+      if (temp == j) {
+        code2[k] = String(key2[j]);
+      }
+    }
+  }
+
+  String step3 = toString(code2);
+  // Serial.println("\nStep3: "+step3);
+  String code3[step3.length()];
+
+  for (int i = 0; i < step3.length(); i++) {
+    for (int j = 0; j < 38; j++) {
+      if (step3.charAt(i) == key3[j] || toupper(step3.charAt(i)) == key3[j]) {
+        if (j < 36) {
+          int cipher = ((j * 5) + 8) % 36;
+          if (cipher < 10) {
+            code3[i] = "0";
+            code3[i].concat(String(cipher));
+          } else {
+            code3[i] = String(cipher);
+          }
+        } else {
+          code3[i] = String(j);
+        }
+        break;
+      }
+    }
+  }
+  String step45 = toString(code3);
+  // Serial.println("\nStep45: "+step45);
+  return step6(step45);
+}
+
+String step6(String mess) {
+  String code4[mess.length() / 2];
+  for (int i = 0, k = 0; k < mess.length() / 2; k++, i = i + 2) {
+    int temp = ((mess.charAt(i) - '0') * 10 + (mess.charAt(i + 1) - '0'));
+    for (int j = 0; j < 38; j++) {
+      if (temp == j) {
+        code4[k] = String(key4[j]);
+      }
+    }
+  }
+  String step6 = toString(code4);
+  // Serial.println("\nStep6: "+step6);
+  return step6;
+}
+
+  void A() {
+    Serial.println("A");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    delay(unit_delay);
+  }
+  void B() {
+    Serial.println("B");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], LOW);
+    digitalWrite(ledPin[7], HIGH);
+    delay(unit_delay);
+  }
+  void C() {
+    Serial.println("C");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    delay(unit_delay);
+  }
+  void D() {
+    Serial.println("D");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    delay(unit_delay);
+  }
+  void E() {
+    Serial.println("E");
+    digitalWrite(ledPin[0], HIGH);
+    delay(unit_delay);
+  }
+  void f() {
+    Serial.println("F");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], LOW);
+    digitalWrite(ledPin[7], HIGH);
+    delay(unit_delay);
+  }
+  void G() {
+    Serial.println("G");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    delay(unit_delay);
+  }
+  void H() {
+    Serial.println("H");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    delay(unit_delay);
+  }
+  void I() {
+    Serial.println("I");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    delay(unit_delay);
+  }
+  void J() {
+    Serial.println("J");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], HIGH);
+    delay(unit_delay);
+  }
+  void K() {
+    Serial.println("K");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    delay(unit_delay);
+  }
+  void L() {
+    Serial.println("L");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], LOW);
+    digitalWrite(ledPin[7], HIGH);
+    delay(unit_delay);
+  }
+  void M() {
+    Serial.println("M");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    delay(unit_delay);
+  }
+  void N() {
+    Serial.println("N");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    delay(unit_delay);
+  }
+  void O() {
+    Serial.println("O");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], HIGH);
+    delay(unit_delay);
+  }
+  void P() {
+    Serial.println("P");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    delay(unit_delay);
+  }
+  void Q() {
+    Serial.println("Q");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], HIGH);
+    delay(unit_delay);
+  }
+  void R() {
+    Serial.println("R");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    delay(unit_delay);
+  }
+  void S() {
+    Serial.println("S");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    delay(unit_delay);
+  }
+  void T() {
+    Serial.println("T");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    delay(unit_delay);
+  }
+  void U() {
+    Serial.println("U");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], HIGH);
+    delay(unit_delay);
+  }
+  void V() {
+    Serial.println("V");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], HIGH);
+    delay(unit_delay);
+  }
+  void W() {
+    Serial.println("W");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    delay(unit_delay);
+  }
+  void X() {
+    Serial.println("X");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], LOW);
+    digitalWrite(ledPin[7], HIGH);
+    digitalWrite(ledPin[8], HIGH);
+    delay(unit_delay);
+  }
+  void Y() {
+    Serial.println("Y");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], HIGH);
+    delay(unit_delay);
+  }
+  void Z() {
+    Serial.println("Z");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    delay(unit_delay);
+  }
+  void one() {
+    Serial.println("1");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], HIGH);
+    digitalWrite(ledPin[10], LOW);
+    digitalWrite(ledPin[11], HIGH);
+    digitalWrite(ledPin[12], HIGH);
+    delay(unit_delay);
+  }
+  void two() {
+    Serial.println("2");
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], HIGH);
+    digitalWrite(ledPin[10], LOW);
+    digitalWrite(ledPin[11], HIGH);
+    digitalWrite(ledPin[12], HIGH);
+    delay(unit_delay);
+  }
+  void three() {
+    Serial.println("3");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], HIGH);
+    digitalWrite(ledPin[8], LOW);
+    digitalWrite(ledPin[9], HIGH);
+    digitalWrite(ledPin[10], HIGH);
+    delay(unit_delay);
+  }
+  void four() {
+    Serial.println("4");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], HIGH);
+    delay(unit_delay);
+  }
+  void five() {
+    Serial.println("5");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], LOW);
+    digitalWrite(ledPin[2], HIGH);
+    digitalWrite(ledPin[3], LOW);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    delay(unit_delay);
+  }
+  void six() {
+    Serial.println("6");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], LOW);
+    digitalWrite(ledPin[5], HIGH);
+    digitalWrite(ledPin[6], LOW);
+    digitalWrite(ledPin[7], HIGH);
+    digitalWrite(ledPin[8], LOW);
+    digitalWrite(ledPin[9], HIGH);
+    delay(unit_delay);
+  }
+  void seven() {
+    Serial.println("7");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], LOW);
+    digitalWrite(ledPin[8], HIGH);
+    digitalWrite(ledPin[9], LOW);
+    digitalWrite(ledPin[10], HIGH);
+    delay(unit_delay);
+  }
+  void eight() {
+    Serial.println("8");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], HIGH);
+    digitalWrite(ledPin[8], LOW);
+    digitalWrite(ledPin[9], HIGH);
+    digitalWrite(ledPin[10], LOW);
+    digitalWrite(ledPin[11], HIGH);
+    delay(unit_delay);
+  }
+  void nine() {
+    Serial.println("9");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], HIGH);
+    digitalWrite(ledPin[8], LOW);
+    digitalWrite(ledPin[9], HIGH);
+    digitalWrite(ledPin[10], HIGH);
+    digitalWrite(ledPin[11], LOW);
+    digitalWrite(ledPin[12], HIGH);
+    delay(unit_delay);
+  }
+  void zero() {
+    Serial.println("0");
+    digitalWrite(ledPin[0], HIGH);
+    digitalWrite(ledPin[1], HIGH);
+    digitalWrite(ledPin[2], LOW);
+    digitalWrite(ledPin[3], HIGH);
+    digitalWrite(ledPin[4], HIGH);
+    digitalWrite(ledPin[5], LOW);
+    digitalWrite(ledPin[6], HIGH);
+    digitalWrite(ledPin[7], HIGH);
+    digitalWrite(ledPin[8], LOW);
+    digitalWrite(ledPin[9], HIGH);
+    digitalWrite(ledPin[10], HIGH);
+    digitalWrite(ledPin[11], LOW);
+    digitalWrite(ledPin[12], HIGH);
+    digitalWrite(ledPin[13], HIGH);
+    delay(unit_delay);
+  }
+
+  void blinkAll() {
+    for (int i = 0; i < 15; i++) {
+      digitalWrite(ledPin[i], HIGH);
+    }
+    delay(unit_delay);
+    for (int i = 0; i < 15; i++) {
+      digitalWrite(ledPin[i], LOW);
+    }
+  }
+
+void morseOutput(String message) {
+  char ch;
+  for (int i = 0; i < message.length(); i++) {
+    ch = message.charAt(i);
+    // Serial.println("\n\nMorse Output");
+    switch (toupper(ch)) {  //toupper(ch.charAt(i))
+      case 'A':
+        A();
+        resetLight();
+        break;
+      case 'B':
+        B();
+        resetLight();
+        break;
+      case 'C':
+        C();
+        resetLight();
+        break;
+      case 'D':
+        D();
+        resetLight();
+        break;
+      case 'E':
+        E();
+        resetLight();
+        break;
+      case 'F':
+        f();
+        resetLight();
+        break;
+      case 'G':
+        G();
+        resetLight();
+        break;
+      case 'H':
+        H();
+        resetLight();
+        break;
+      case 'I':
+        I();
+        resetLight();
+        break;
+      case 'J':
+        J();
+        resetLight();
+        break;
+      case 'K':
+        K();
+        resetLight();
+        break;
+      case 'L':
+        L();
+        resetLight();
+        break;
+      case 'M':
+        M();
+        resetLight();
+        break;
+      case 'N':
+        N();
+        resetLight();
+        break;
+      case 'O':
+        O();
+        resetLight();
+        break;
+      case 'P':
+        P();
+        resetLight();
+        break;
+      case 'Q':
+        Q();
+        resetLight();
+        break;
+      case 'R':
+        R();
+        resetLight();
+        break;
+      case 'S':
+        S();
+        resetLight();
+        break;
+      case 'T':
+        T();
+        resetLight();
+        break;
+      case 'U':
+        U();
+        resetLight();
+        break;
+      case 'V':
+        V();
+        resetLight();
+        break;
+      case 'W':
+        W();
+        resetLight();
+        break;
+      case 'X':
+        X();
+        resetLight();
+        break;
+      case 'Y':
+        Y();
+        resetLight();
+        break;
+      case 'Z':
+        Z();
+        resetLight();
+        break;
+      case '0':
+        zero();
+        resetLight();
+        break;
+      case '1':
+        one();
+        resetLight();
+        break;
+      case '2':
+        two();
+        resetLight();
+        break;
+      case '3':
+        three();
+        resetLight();
+        break;
+      case '4':
+        four();
+        resetLight();
+        break;
+      case '5':
+        five();
+        resetLight();
+        break;
+      case '6':
+        six();
+        resetLight();
+        break;
+      case '7':
+        seven();
+        resetLight();
+        break;
+      case '8':
+        eight();
+        resetLight();
+        break;
+      case '9':
+        nine();
+        resetLight();
+        break;
+
+      case ' ':
+        delay(unit_delay * 5);
+        resetLight();
+        break; 
+      default:
+      Serial.print("%");
+        blinkAll();
+        resetLight();
+        break;
+    }
+  }
+}
+
+  void resetLight() {
+    for (int i = 0; i < 15; i++) {
+      digitalWrite(ledPin[i], LOW);
+    }
+  }
+
+
+
+  void setup() {
+    // put your setup code here, to run once:
+    Serial.begin(57600);
+    for (int i = 0; i < 15; i++) {
+      pinMode(ledPin[i], OUTPUT);
+    }
+    Serial.print("\n\t\t\t\t---------------------THE PANGRAM SYSTEM---------------------\n");
+  }
+
+  void loop() {
+    // put your main code here, to run repeatedly:
+    Serial.print("\n\nEnter Message To Be Encrypted Using The Pangram System [Alphanumeric Only, End With '%']: \n");
+    while (Serial.available() == 0) {}
+    message = Serial.readString();
+    Serial.println(message);
+    Encrypt();
+  }
